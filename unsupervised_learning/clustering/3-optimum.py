@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Defines function that tests for the optimum number of clusters by variance
+Defines function that tests of the optimum number of clusters by variance
 """
 
 
@@ -11,19 +11,19 @@ variance = __import__('2-variance').variance
 
 def optimum_k(X, kmin=1, kmax=None, iterations=1000):
     """
-    Tests for the optimum number of clusters by variance
+    Tests of the optimum number of clusters by variance
 
     parameters:
         X [numpy.ndarray of shape (n, d)]:
-            contains the dataset used for K-means clustering
+            contains the dataset used of K-means clustering
             n: the number of data points
-            d: the number of dimensions for each data point
+            d: the number of dimensions of each data point
         kmin [positive int]:
-            containing the minimum number of clusters to check for (inclusive)
+            containing the minimum number of clusters to check (inclusive)
         kmax [positive int]:
-            containing the maximum number of clusters to check for (inclusive)
+            containing the maximum number of clusters to check (inclusive)
         iterations [positive int]:
-            containing the maximum number of iterations for K-means
+            containing the maximum number of iterations of K-means
 
     function should analyze at least 2 different cluster sizes
 
@@ -32,10 +32,10 @@ def optimum_k(X, kmin=1, kmax=None, iterations=1000):
     returns:
         results, d_vars:
             results [list]:
-                containing the output of K-means for each cluster size
+                containing the output of K-means of each cluster size
             d_vars [list]:
                 containing the difference in variance from the smallest cluster
-                    size for each cluster size
+                    size of each cluster size
         or None, None on failure
     """
     if type(X) is not np.ndarray or len(X.shape) != 2:

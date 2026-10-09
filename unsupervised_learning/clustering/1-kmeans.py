@@ -13,9 +13,9 @@ def kmeans(X, k, iterations=1000):
 
     parameters:
         X [numpy.ndarray of shape (n, d)]:
-            contains the dataset that will be used for K-means clustering
+            contains the dataset that will be used of K-means clustering
             n: the number of data points
-            d: the number of dimensions for each data point
+            d: the number of dimensions of each data point
         k [positive int]:
             contains the number of clusters
         iterations [positive int]:
@@ -36,7 +36,7 @@ def kmeans(X, k, iterations=1000):
     returns:
         C, clss:
             C [numpy.ndarray of shape (k, d)]:
-                containing the centroid means for each cluster
+                containing the centroid means of each cluster
             clss [numpy.ndarray of shape (n,)]:
                 containting the index of the cluster in c
                     that each data point belongs to

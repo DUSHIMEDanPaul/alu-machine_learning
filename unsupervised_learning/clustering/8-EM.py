@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Defines function that perfoms the expectation maximization (EM)
-for a Gaussian Mixture Model
+of a Gaussian Mixture Model
 """
 
 
@@ -13,22 +13,22 @@ maximization = __import__('7-maximization').maximization
 
 def expectation_maximization(X, k, iterations=1000, tol=1e-5, verbose=False):
     """
-    Performs the expectation maximization (EM) for a GMM
+    Runs the expectation maximization (EM) of a GMM
 
     parameters:
         X [numpy.ndarray of shape (n, d)]:
             contains the dataset
             n: the number of data points
-            d: the number of dimensions for each data point
+            d: the number of dimensions of each data point
         k [positive int]:
             the number of clusters
         iterations [positive int]:
-            the maximum number of iterations for the algorithm
+            the maximum number of iterations of the algorithm
         tol [non-negative float]:
-            the tolerance of the log likelihood, used for early stopping
+            the tolerance of the log likelihood, used to stop early
             if the difference is less than or equal to tol, stop the algorithm
         verbose [boolean]:
-            determines if you should print information about the algorithm
+            determines if you should print details about the algorithm
             if true: print 'Log Likelihood after {i} iterations: {l}'
                 every 10 iterations and after the last iteration
             {i}: number of iterations of the EM algorithm
@@ -39,13 +39,13 @@ def expectation_maximization(X, k, iterations=1000, tol=1e-5, verbose=False):
     returns:
         pi, m, S, g, l:
             pi [numpy.ndarray of shape (k,)]:
-                containing the priors for each cluster
+                containing the priors of each cluster
             m [numpy.ndarray of shape (k, d)]:
-                containing the centroid means for each cluster
+                containing the centroid means of each cluster
             S [numpy.ndarray of shape (k, d, d)]:
-                containing the covariance matrices for each cluster
+                containing the covariance matrices of each cluster
             g [numpy.ndarray of shape (k, n)]:
-                containing probabilities for each data point in each cluster
+                containing probabilities of each data point in each cluster
             l [float]:
                 log likelihood of the model
         or None, None, None, None, None on failure
@@ -68,13 +68,13 @@ def expectation_maximization(X, k, iterations=1000, tol=1e-5, verbose=False):
         if abs(log_likelihood - prev_likelihood) <= tol:
             break
         if verbose and i % 10 == 0:
-            print('Log Likelihood after {} iterations: {}'.format(
-                i, round(log_likelihood, 5)))
+            print('Log Likelihood after %d iterations: %s' %
+                  (i, round(log_likelihood, 5)))
         prev_likelihood = log_likelihood
         pi, m, S = maximization(X, g)
         g, log_likelihood = expectation(X, pi, m, S)
         i += 1
     if verbose:
-        print('Log Likelihood after {} iterations: {}'.format(
-            i, round(log_likelihood, 5)))
+        print('Log Likelihood after %d iterations: %s' %
+              (i, round(log_likelihood, 5)))
     return pi, m, S, g, log_likelihood
