@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Defines function that initializes variables for a Gaussian Mixture Model
+Defines function that initializes variables of a Gaussian Mixture Model
 """
 
 
@@ -10,13 +10,13 @@ kmeans = __import__('1-kmeans').kmeans
 
 def initialize(X, k):
     """
-    Initializes variables for a Gaussian Mixture Model
+    Initializes variables of a Gaussian Mixture Model
 
     parameters:
         X [numpy.ndarray of shape (n, d)]:
-            contains the dataset used for K-means clustering
+            contains the dataset used in K-means clustering
             n: the number of data points
-            d: the number of dimensions for each data point
+            d: the number of dimensions of each data point
         k [positive int]:
             containing the number of clusters
 
@@ -25,12 +25,12 @@ def initialize(X, k):
     returns:
         pi, m, S:
             pi [numpy.ndarray of shape (k,)]:
-                containing the priors for each cluster, initialized evenly
+                containing the priors of each cluster, initialized evenly
             m [numpy.ndarray of shape (k, d)]:
-                containing the centroid means for each cluster,
+                containing the centroid means of each cluster,
                     initialized with K-means
             S [numpy.ndarray of shape (k, d, d)]:
-                containing the covariance matrices for each cluster,
+                containing the covariance matrices of each cluster,
                     initialized as identity matrices
         or None, None, None on failure
     """

@@ -16,7 +16,7 @@ def pdf(X, m, S):
         X [numpy.ndarray of shape (n, d)]:
             contains the dataset whose PDF should be calculated
             n: the number of data points
-            d: the number of dimensions for each data point
+            d: the number of dimensions of each data point
         m [numpy.ndarray of shape (d,)]:
             contains the mean of the distribution
         S [numpy.ndarray of shape (d, d)]:
@@ -27,7 +27,7 @@ def pdf(X, m, S):
 
     returns:
         P [numpy.ndarray of shape (n,)]:
-            containing the PDF values for each data point
+            containing the PDF value of each data point
             all values in P should have a minimum value of 1e-300
         or None on failure
     """
@@ -43,7 +43,7 @@ def pdf(X, m, S):
         return None
     inv = np.linalg.inv(S)
     diff = X - m
-    # Mahalanobis term for each data point, computed without np.diag
+    # Mahalanobis term of each data point, computed without np.diag
     exponent = -0.5 * np.sum(np.matmul(diff, inv) * diff, axis=1)
     coefficient = 1 / np.sqrt(((2 * np.pi) ** d) * det)
     P = coefficient * np.exp(exponent)
