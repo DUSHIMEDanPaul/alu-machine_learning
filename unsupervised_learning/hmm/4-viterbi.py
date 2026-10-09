@@ -61,4 +61,16 @@ def viterbi(Observation, Emission, Transition, Initial):
     N_check1, one = Initial.shape
     if N_check1 != N or one != 1:
         return None, None
-    return None, None
+    V = np.zeros((N, T))
+    backpointer = np.zeros((N, T), dtype=int)
+    V[:, 0] = Initial[:, 0] * Emission[:, Observation[0]]
+    for t in range(1, T):
+        # probability of best path into each state j through each state i
+        paths = V[:, t - 1, np.newaxis] * Transition
+        backpointer[:, t] = np.argmax(paths, axis=0)
+        V[:, t] = np.max(paths, axis=0) * Emission[:, Observation[t]]
+    path = [int(np.argmax(V[:, T - 1]))]
+    for t in range(T - 1, 0, -1):
+        path.insert(0, int(backpointer[path[0], t]))
+    P = np.max(V[:, T - 1])
+    return path, P

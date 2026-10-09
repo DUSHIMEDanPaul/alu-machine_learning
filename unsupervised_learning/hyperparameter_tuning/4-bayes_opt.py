@@ -95,7 +95,7 @@ class BayesianOptimization:
             optimization should be formed for minimization or maximization")
         self.f = f
         self.gp = GP(X_init, Y_init, l, sigma_f)
-        self.X_s = X_init
+        self.X_s = np.linspace(min, max, ac_samples)[:, np.newaxis]
         self.xsi = xsi
         self.minimize = minimize
 
@@ -111,4 +111,14 @@ class BayesianOptimization:
             EI [numpy.ndarray of shape (ac_samples,)]:
                 contains the expected improvement of each potential sample
         """
-        return None, None
+        mu, sigma = self.gp.predict(self.X_s)
+        if self.minimize:
+            improvement = np.min(self.gp.Y) - mu - self.xsi
+        else:
+            improvement = mu - np.max(self.gp.Y) - self.xsi
+        with np.errstate(divide='ignore', invalid='ignore'):
+            Z = improvement / sigma
+            EI = improvement * norm.cdf(Z) + sigma * norm.pdf(Z)
+        EI[sigma == 0] = 0
+        X_next = self.X_s[np.argmax(EI)]
+        return X_next, EI

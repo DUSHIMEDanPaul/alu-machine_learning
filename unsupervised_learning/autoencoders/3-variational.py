@@ -4,7 +4,26 @@ Defines function that creates a variational autoencoder
 """
 
 
+import tensorflow as tf
 import tensorflow.keras as keras
+
+
+class Sampling(keras.layers.Layer):
+    """
+    Samples the latent representation from the mean and log variance
+    using the reparameterization trick, and adds the KL divergence loss
+    """
+
+    def call(self, inputs):
+        """
+        Returns z = mean + exp(log_var / 2) * epsilon
+        """
+        mean, log_var = inputs
+        kl = -0.5 * tf.reduce_sum(
+            1 + log_var - tf.square(mean) - tf.exp(log_var), axis=-1)
+        self.add_loss(tf.reduce_mean(kl))
+        epsilon = tf.random.normal(tf.shape(mean))
+        return mean + tf.exp(log_var / 2) * epsilon
 
 
 def autoencoder(input_dims, hidden_layers, latent_dims):
@@ -53,24 +72,16 @@ def autoencoder(input_dims, hidden_layers, latent_dims):
     encoder_inputs = keras.Input(shape=(input_dims,))
     encoder_value = encoder_inputs
     for i in range(len(hidden_layers)):
-        encoder_layer = keras.layers.Conv2D(hidden_layers[i],
-                                            activation='relu',
-                                            kernel_size=(3, 3),
-                                            padding='same')
+        encoder_layer = keras.layers.Dense(units=hidden_layers[i],
+                                           activation='relu')
         encoder_value = encoder_layer(encoder_value)
-        encoder_batch_norm = keras.layers.BatchNormalization()
-        encoder_value = encoder_batch_norm(encoder_value)
-    encoder_flatten = keras.layers.Flatten()
-    encoder_value = encoder_flatten(encoder_value)
-    encoder_dense = keras.layers.Dense(activation='relu')
-    encoder_value = encoder_dense(encoder_value)
-    encoder_batch_norm = keras.layers.BatchNormalization()
-    encoder_value = encoder_batch_norm(encoder_value)
-
-    encoder_output_layer = keras.layers.Dense(units=latent_dims,
-                                              activation='relu')
-    encoder_outputs = encoder_output_layer(encoder_value)
-    encoder = keras.Model(inputs=encoder_inputs, outputs=encoder_outputs)
+    mean = keras.layers.Dense(units=latent_dims,
+                              activation=None)(encoder_value)
+    log_var = keras.layers.Dense(units=latent_dims,
+                                 activation=None)(encoder_value)
+    z = Sampling()([mean, log_var])
+    encoder = keras.Model(inputs=encoder_inputs,
+                          outputs=[z, mean, log_var])
 
     # decoder
     decoder_inputs = keras.Input(shape=(latent_dims,))
@@ -86,8 +97,13 @@ def autoencoder(input_dims, hidden_layers, latent_dims):
 
     # autoencoder
     inputs = encoder_inputs
-    auto = keras.Model(inputs=inputs, outputs=decoder(encoder(inputs)))
-    auto.compile(optimizer='adam',
-                 loss='binary_crossentropy')
+    auto = keras.Model(inputs=inputs, outputs=decoder(encoder(inputs)[0]))
 
+    def reconstruction_loss(y_true, y_pred):
+        """
+        Binary cross-entropy summed over the input dimensions
+        """
+        return keras.losses.binary_crossentropy(y_true, y_pred) * input_dims
+
+    auto.compile(optimizer='adam', loss=reconstruction_loss)
     return encoder, decoder, auto

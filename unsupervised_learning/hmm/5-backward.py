@@ -61,4 +61,10 @@ def backward(Observation, Emission, Transition, Initial):
     N_check1, one = Initial.shape
     if N_check1 != N or one != 1:
         return None, None
-    return None, None
+    B = np.zeros((N, T))
+    B[:, T - 1] = 1
+    for t in range(T - 2, -1, -1):
+        B[:, t] = np.matmul(Transition,
+                            Emission[:, Observation[t + 1]] * B[:, t + 1])
+    P = np.sum(Initial[:, 0] * Emission[:, Observation[0]] * B[:, 0])
+    return P, B

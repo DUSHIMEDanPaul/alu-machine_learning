@@ -30,13 +30,21 @@ def regular(P):
     n, n_check = P.shape
     if n != n_check:
         return None
-    if not (P > 0).all():
+    # each row of P must be a probability distribution
+    if not np.isclose(np.sum(P, axis=1), 1).all():
         return None
-    Identity = np.identity(n)
-    Q = P - Identity
-    e = np.ones((n,))
-    Qe = np.c_[Q, e]
-    QTQ = np.matmul(Qe, Qe.T)
-    QbT = np.ones((n,))
-    result = np.linalg.solve(QTQ, QbT)
-    return np.expand_dims(result, axis=0)
+    # P is regular if some power of P has only positive entries;
+    # checking up to (n - 1) ** 2 + 1 is sufficient
+    power = P
+    for i in range((n - 1) ** 2 + 1):
+        if (power > 0).all():
+            break
+        power = np.matmul(power, P)
+    else:
+        return None
+    # steady state s satisfies s(P - I) = 0 with entries summing to 1
+    A = np.vstack(((P - np.identity(n)).T, np.ones((1, n))))
+    b = np.zeros((n + 1,))
+    b[n] = 1
+    steady = np.linalg.lstsq(A, b, rcond=None)[0]
+    return steady[np.newaxis, :]

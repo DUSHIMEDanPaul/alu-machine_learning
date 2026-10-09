@@ -90,6 +90,6 @@ class BayesianOptimization:
             optimization should be formed for minimization or maximization")
         self.f = f
         self.gp = GP(X_init, Y_init, l, sigma_f)
-        self.X_s = X_init
+        self.X_s = np.linspace(min, max, ac_samples)[:, np.newaxis]
         self.xsi = xsi
         self.minimize = minimize

@@ -53,4 +53,35 @@ def BIC(X, kmin=1, kmax=None, iterations=1000, tol=1e-5, verbose=False):
                     l: the log likelihood of the model
         or None, None, None, None on failure
     """
-    return None, None, None, None
+    if type(X) is not np.ndarray or len(X.shape) != 2:
+        return None, None, None, None
+    n, d = X.shape
+    if kmax is None:
+        kmax = n
+    if type(kmin) is not int or kmin <= 0 or kmin >= n:
+        return None, None, None, None
+    if type(kmax) is not int or kmax <= 0 or kmax > n:
+        return None, None, None, None
+    if kmin >= kmax:
+        return None, None, None, None
+    if type(iterations) is not int or iterations <= 0:
+        return None, None, None, None
+    if type(tol) is not float or tol < 0:
+        return None, None, None, None
+    if type(verbose) is not bool:
+        return None, None, None, None
+    likelihoods = []
+    bics = []
+    results = []
+    for k in range(kmin, kmax + 1):
+        pi, m, S, g, log_likelihood = expectation_maximization(
+            X, k, iterations, tol, verbose)
+        results.append((pi, m, S))
+        likelihoods.append(log_likelihood)
+        # free parameters: priors, means, and symmetric covariances
+        p = (k - 1) + (k * d) + (k * d * (d + 1) / 2)
+        bics.append(p * np.log(n) - 2 * log_likelihood)
+    likelihoods = np.array(likelihoods)
+    bics = np.array(bics)
+    best = np.argmin(bics)
+    return kmin + best, results[best], likelihoods, bics

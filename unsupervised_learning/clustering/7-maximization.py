@@ -33,4 +33,22 @@ def maximization(X, g):
                 containing the updated covariance matrices for each cluster
         or None, None, None on failure
     """
-    return None, None, None
+    if type(X) is not np.ndarray or len(X.shape) != 2:
+        return None, None, None
+    n, d = X.shape
+    if type(g) is not np.ndarray or len(g.shape) != 2 or g.shape[1] != n:
+        return None, None, None
+    k = g.shape[0]
+    # posteriors for each data point must sum to 1 across clusters
+    if not np.isclose(np.sum(g, axis=0), np.ones((n,))).all():
+        return None, None, None
+    pi = np.zeros((k,))
+    m = np.zeros((k, d))
+    S = np.zeros((k, d, d))
+    for i in range(k):
+        g_sum = np.sum(g[i])
+        pi[i] = g_sum / n
+        m[i] = np.matmul(g[i], X) / g_sum
+        diff = X - m[i]
+        S[i] = np.matmul(g[i] * diff.T, diff) / g_sum
+    return pi, m, S

@@ -27,4 +27,14 @@ def variance(X, C):
         var [float]: total variance
         or None on failure
     """
-    return None
+    if type(X) is not np.ndarray or len(X.shape) != 2:
+        return None
+    if type(C) is not np.ndarray or len(C.shape) != 2:
+        return None
+    if X.shape[1] != C.shape[1]:
+        return None
+    # squared distance from each data point to each centroid
+    distances = np.sum((X[:, np.newaxis] - C) ** 2, axis=2)
+    # each data point contributes its distance to its closest centroid
+    var = np.sum(np.min(distances, axis=1))
+    return var

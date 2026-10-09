@@ -61,4 +61,10 @@ def forward(Observation, Emission, Transition, Initial):
     N_check1, one = Initial.shape
     if N_check1 != N or one != 1:
         return None, None
-    return None, None
+    F = np.zeros((N, T))
+    F[:, 0] = Initial[:, 0] * Emission[:, Observation[0]]
+    for t in range(1, T):
+        F[:, t] = np.matmul(F[:, t - 1], Transition) * \
+            Emission[:, Observation[t]]
+    P = np.sum(F[:, T - 1])
+    return P, F

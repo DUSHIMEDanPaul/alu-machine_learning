@@ -97,7 +97,7 @@ class BayesianOptimization:
             optimization should be formed for minimization or maximization")
         self.f = f
         self.gp = GP(X_init, Y_init, l, sigma_f)
-        self.X_s = X_init
+        self.X_s = np.linspace(min, max, ac_samples)[:, np.newaxis]
         self.xsi = xsi
         self.minimize = minimize
 
@@ -113,7 +113,17 @@ class BayesianOptimization:
             EI [numpy.ndarray of shape (ac_samples,)]:
                 contains the expected improvement of each potential sample
         """
-        return None, None
+        mu, sigma = self.gp.predict(self.X_s)
+        if self.minimize:
+            improvement = np.min(self.gp.Y) - mu - self.xsi
+        else:
+            improvement = mu - np.max(self.gp.Y) - self.xsi
+        with np.errstate(divide='ignore', invalid='ignore'):
+            Z = improvement / sigma
+            EI = improvement * norm.cdf(Z) + sigma * norm.pdf(Z)
+        EI[sigma == 0] = 0
+        X_next = self.X_s[np.argmax(EI)]
+        return X_next, EI
 
     def optimize(self, iterations=100):
         """
@@ -137,4 +147,17 @@ class BayesianOptimization:
             raise TypeError("iterations must be an integer")
         if iterations <= 0:
             raise ValueError("iterations must be a positive number")
-        return None, None
+        for i in range(iterations):
+            X_next, _ = self.acquisition()
+            # stop early if the proposed point has already been sampled
+            if np.any(np.isclose(X_next, self.gp.X)):
+                break
+            Y_next = self.f(X_next)
+            self.gp.update(X_next, Y_next)
+        if self.minimize:
+            index = np.argmin(self.gp.Y)
+        else:
+            index = np.argmax(self.gp.Y)
+        X_opt = self.gp.X[index]
+        Y_opt = self.gp.Y[index]
+        return X_opt, Y_opt

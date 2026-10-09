@@ -50,4 +50,31 @@ def expectation_maximization(X, k, iterations=1000, tol=1e-5, verbose=False):
                 log likelihood of the model
         or None, None, None, None, None on failure
     """
-    return None, None, None, None, None
+    if type(X) is not np.ndarray or len(X.shape) != 2:
+        return None, None, None, None, None
+    if type(k) is not int or k <= 0 or k > X.shape[0]:
+        return None, None, None, None, None
+    if type(iterations) is not int or iterations <= 0:
+        return None, None, None, None, None
+    if type(tol) is not float or tol < 0:
+        return None, None, None, None, None
+    if type(verbose) is not bool:
+        return None, None, None, None, None
+    pi, m, S = initialize(X, k)
+    g, log_likelihood = expectation(X, pi, m, S)
+    prev_likelihood = 0
+    i = 0
+    while i < iterations:
+        if abs(log_likelihood - prev_likelihood) <= tol:
+            break
+        if verbose and i % 10 == 0:
+            print('Log Likelihood after {} iterations: {}'.format(
+                i, round(log_likelihood, 5)))
+        prev_likelihood = log_likelihood
+        pi, m, S = maximization(X, g)
+        g, log_likelihood = expectation(X, pi, m, S)
+        i += 1
+    if verbose:
+        print('Log Likelihood after {} iterations: {}'.format(
+            i, round(log_likelihood, 5)))
+    return pi, m, S, g, log_likelihood

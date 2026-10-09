@@ -28,4 +28,15 @@ def absorbing(P):
     n, n_check = P.shape
     if n != n_check:
         return False
-    return True
+    # absorbing states can never be left
+    absorbing_states = np.isclose(np.diag(P), 1)
+    if not absorbing_states.any():
+        return False
+    # spread reachability from absorbing states backwards through P
+    can_absorb = absorbing_states
+    for i in range(n):
+        reaches = np.any(P[:, can_absorb] > 0, axis=1) | can_absorb
+        if (reaches == can_absorb).all():
+            break
+        can_absorb = reaches
+    return bool(can_absorb.all())

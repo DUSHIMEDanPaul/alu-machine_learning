@@ -34,4 +34,15 @@ def initialize(X, k):
                     initialized as identity matrices
         or None, None, None on failure
     """
-    return None, None, None
+    if type(X) is not np.ndarray or len(X.shape) != 2:
+        return None, None, None
+    if type(k) is not int or k <= 0:
+        return None, None, None
+    n, d = X.shape
+    # priors initialized evenly
+    pi = np.full((k,), 1 / k)
+    # centroid means initialized with K-means
+    m, _ = kmeans(X, k)
+    # covariance matrices initialized as identity matrices
+    S = np.tile(np.identity(d), (k, 1, 1))
+    return pi, m, S

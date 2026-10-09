@@ -27,4 +27,7 @@ def kmeans(X, k):
                 containting the index of the cluster in c
                     that each data point belongs to
     """
-    return None, None
+    k_means = sklearn.cluster.KMeans(n_clusters=k).fit(X)
+    C = k_means.cluster_centers_
+    clss = k_means.labels_
+    return C, clss

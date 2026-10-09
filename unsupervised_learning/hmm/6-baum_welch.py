@@ -5,6 +5,8 @@ Defines function that performs the Baum-Welch algorithm for Hidden Markov Model
 
 
 import numpy as np
+forward = __import__('3-forward').forward
+backward = __import__('5-backward').backward
 
 
 def baum_welch(Observations, Transition, Emission, Initial, iterations=1000):
@@ -30,11 +32,12 @@ def baum_welch(Observations, Transition, Emission, Initial, iterations=1000):
         the converged Transition, Emission
         or None, None on failure
     """
-    # check that Observation is the correct type and dimension
-    if type(Observation) is not np.ndarray or len(Observation.shape) < 1:
+    # check that Observations is the correct type and dimension
+    if type(Observations) is not np.ndarray or \
+            len(Observations.shape) != 1:
         return None, None
-    # save T from Observation's shape
-    T = Observation.shape[0]
+    # save T from Observations' shape
+    T = Observations.shape[0]
     # check that Transition is the correct type and dimension
     if type(Transition) is not np.ndarray or len(Transition.shape) != 2:
         return None, None
@@ -59,4 +62,21 @@ def baum_welch(Observations, Transition, Emission, Initial, iterations=1000):
     # check that iterations is a positive int
     if type(iterations) is not int or iterations < 1:
         return None, None
-    return None, None
+    for i in range(iterations):
+        _, alpha = forward(Observations, Emission, Transition, Initial)
+        _, beta = backward(Observations, Emission, Transition, Initial)
+        # xi[i, j, t]: probability of state i at t and state j at t + 1
+        xi = np.zeros((M, M, T - 1))
+        for t in range(T - 1):
+            numerator = alpha[:, t, np.newaxis] * Transition * \
+                Emission[:, Observations[t + 1]] * beta[:, t + 1]
+            xi[:, :, t] = numerator / np.sum(numerator)
+        # gamma[i, t]: probability of state i at t
+        gamma = alpha * beta / np.sum(alpha * beta, axis=0)
+        Transition = np.sum(xi, axis=2) / \
+            np.sum(gamma[:, :T - 1], axis=1)[:, np.newaxis]
+        Emission = np.zeros((M, N))
+        for k in range(N):
+            Emission[:, k] = np.sum(gamma[:, Observations == k], axis=1)
+        Emission = Emission / np.sum(gamma, axis=1)[:, np.newaxis]
+    return Transition, Emission
